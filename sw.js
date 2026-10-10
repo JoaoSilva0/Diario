@@ -1,5 +1,5 @@
-// Livro dos Dias — funciona offline. Os teus dias nunca passam por aqui: ficam no armazenamento do aparelho.
-const CACHE = 'livro-dos-dias-v1';
+// Diário — funciona offline. Os teus dias nunca passam por aqui: ficam no armazenamento do aparelho.
+const CACHE = 'diario-v2';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

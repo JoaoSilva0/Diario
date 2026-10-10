@@ -1,6 +1,6 @@
 {
-  "name": "Livro dos Dias",
-  "short_name": "Livro dos Dias",
+  "name": "Diário",
+  "short_name": "Diário",
   "description": "O meu diário: dias, pessoas, filmes e retrospetivas.",
   "lang": "pt-PT",
   "start_url": "./",

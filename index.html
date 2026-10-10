@@ -8,11 +8,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Livro dos Dias">
+<meta name="apple-mobile-web-app-title" content="Diário">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>Livro dos Dias</title>
+<title>Diário</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;1,7..72,400&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -100,7 +100,7 @@ button.link:hover{text-decoration:underline}
 .today{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px;margin-top:18px;align-items:start}
 @media (max-width:860px){.today{grid-template-columns:1fr}}
 .daynav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.daynav .date{font-family:var(--f-display);font-weight:700;font-size:1.35rem;letter-spacing:-.01em;flex:1;min-width:0;text-wrap:balance}
+.daynav .date{font-family:var(--f-display);font-weight:700;font-size:1.35rem;letter-spacing:-.01em;flex:1;min-width:0;text-wrap:balance;background:none;border:0;padding:0;text-align:left;cursor:pointer}
 .iconbtn{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--sheet);display:grid;place-items:center;font-size:1rem;flex:none}
 .iconbtn:hover{border-color:var(--cobalt)}
 .score{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
@@ -221,6 +221,72 @@ textarea.input{width:100%;min-height:120px;font-family:var(--f-mono);font-size:.
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:10px;font-size:.88rem;z-index:80;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(8px);opacity:.6}to{transform:none;opacity:1}}}
 html{-webkit-text-size-adjust:100%}
+.gear{display:none}
+.bnav{display:none}
+/* ---------- telemóvel ---------- */
+@media (max-width:760px){
+  body{font-size:16px}
+  .top{position:static;backdrop-filter:none;background:var(--paper);border-bottom:0}
+  .top-in{padding-block:10px 4px}
+  .tabs{display:none}
+  .gear{display:grid;width:40px;height:40px;color:var(--muted)}
+  .brand h1{font-size:1.7rem}
+  .storage span{display:none}
+  .wrap{padding-block:0 calc(84px + env(safe-area-inset-bottom,0px))}
+  .bnav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--sheet);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
+  .bnav button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;font-size:.7rem;font-weight:700;color:var(--muted);border-radius:12px;min-height:52px;justify-content:center}
+  .bnav button[aria-current="page"]{color:var(--cobalt)}
+  .bnav button[aria-current="page"] svg{background:var(--cobalt-soft);border-radius:999px;padding:3px 14px;box-sizing:content-box}
+  body.typing .bnav{display:none}
+  body.typing .wrap{padding-block:0 24px}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+
+  .stack,.today{gap:12px;margin-top:10px}
+  .panel{padding:14px;border-radius:12px;gap:10px}
+  .input,select.input{font-size:16px;padding:10px 12px;min-height:44px}
+  .btn{min-height:42px;padding:9px 14px}
+  .iconbtn{width:44px;height:44px;font-size:1.3rem}
+  .daynav{flex-wrap:nowrap;gap:6px}
+  .daynav .date{font-size:1.05rem;text-align:center;line-height:1.25}
+  #datePick{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .daynav .btn.ghost{padding:9px 8px}
+  .score{gap:3px}
+  .score button{padding:11px 0;font-size:.95rem}
+  .paper textarea{min-height:240px;padding:12px 14px 16px 40px;font-size:1.05rem;line-height:30px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 29px,var(--line) 29px,var(--line) 30px);background-attachment:local}
+  .paper::before{left:28px}
+  .dots{gap:6px}
+  .dots button{width:36px;height:36px}
+  .factor{grid-template-columns:1fr}
+  .factor span{font-weight:600;font-size:.92rem}
+  .chip{padding:7px 12px;font-size:.9rem}
+  .chip button{padding:0 2px 0 6px;font-size:1.2rem}
+  .ac button{padding:12px 14px}
+
+  .seg{flex-wrap:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:none;border-radius:999px}
+  .seg::-webkit-scrollbar{display:none}
+  .seg button{white-space:nowrap;padding:9px 14px;font-size:.85rem}
+  .tiles{gap:8px}
+  .tile{padding:12px}
+  .tile b{font-size:1.6rem}
+  .tiles .tile:last-child:nth-child(odd){grid-column:1/-1}
+  .facts{grid-template-columns:1fr;gap:8px}
+  .bar{grid-template-columns:minmax(70px,96px) minmax(0,1fr) 36px;padding:6px 0}
+  .entry{grid-template-columns:50px minmax(0,1fr) auto;gap:10px;padding:12px 2px}
+  .entry .d b{font-size:1.3rem}
+  .filters{grid-template-columns:1fr 1fr}
+  .pgrid{grid-template-columns:1fr;gap:8px}
+  .set-row{grid-template-columns:1fr auto}
+  .vcol{height:120px}
+
+  .ov{padding:0}
+  .sheet{border-radius:0;min-height:100%;border:0;max-width:none}
+  .sheet-h{position:sticky;top:0;z-index:2;background:var(--paper);padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px}
+  .sheet-b{padding:14px 16px calc(28px + env(safe-area-inset-bottom,0px))}
+  .reading{font-size:1.05rem}
+  .kv{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .empty{padding:28px 14px}
+  .empty .row{flex-direction:column;align-items:stretch;width:100%}
+}
 body{margin:0;padding-bottom:env(safe-area-inset-bottom,0px)}
 [hidden]{display:none!important}
 img{max-width:100%}
@@ -231,8 +297,11 @@ img{max-width:100%}
 <header class="top">
   <div class="top-in">
     <div class="brand">
-      <h1>Livro <span>dos</span> Dias</h1>
-      <div class="storage" id="storage"><i></i><span>A abrir…</span></div>
+      <h1>Diário<span>.</span></h1>
+      <div class="row" style="gap:10px;flex-wrap:nowrap">
+        <div class="storage" id="storage"><i></i><span>A abrir…</span></div>
+        <button class="iconbtn gear" data-view="ajustes" aria-label="Ajustes"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+      </div>
     </div>
     <nav class="tabs" role="tablist" id="tabs">
       <button class="tab" role="tab" data-view="hoje">Escrever</button>
@@ -244,6 +313,7 @@ img{max-width:100%}
     </nav>
   </div>
 </header>
+<nav class="bnav" id="bnav" aria-label="Secções"><button data-view="hoje"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg><span>Escrever</span></button><button data-view="arquivo"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span>Arquivo</span></button><button data-view="retro"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Resumo</span></button><button data-view="pessoas"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.5 6-5.5s5.4 2.1 6 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.6c2.3.3 4 2.1 4.5 5.4"/></svg><span>Pessoas</span></button><button data-view="filmes"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v14M17 5v14M3 9.5h4M3 14.5h4M17 9.5h4M17 14.5h4"/></svg><span>Filmes</span></button></nav>
 <main class="wrap">
   <div id="banner"></div>
   <div id="main"><div class="empty"><h3>A abrir o teu diário…</h3><p>Só um momento.</p></div></div>
@@ -526,7 +596,7 @@ function stats(range){
 
 /* ---------- render: shell ---------- */
 function render(){
-  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.view===S.view)));
+  document.querySelectorAll('#tabs [data-view],#bnav [data-view],.gear').forEach(t=>{t.setAttribute('aria-selected',String(t.dataset.view===S.view));if(t.closest('#bnav'))t.setAttribute('aria-current',t.dataset.view===S.view?'page':'false')});
   setStorageLabel();renderBanner();
   const m=$('#main');
   if(S.mode==='loading'){m.innerHTML='<div class="empty"><h3>A abrir o teu diário…</h3><p>Só um momento.</p></div>';return}
@@ -551,7 +621,7 @@ function renderHoje(){
     <section class="panel">
       <div class="daynav">
         <button class="iconbtn" data-a="day-prev" aria-label="Dia anterior">‹</button>
-        <div class="date">${esc(fmtLong(S.date))}${isToday?' <span class="chip kw" style="vertical-align:middle">hoje</span>':''}</div>
+        <button class="date" data-a="pick-date" aria-label="Escolher data">${esc(fmtLong(S.date))}${isToday?' <span class="chip kw" style="vertical-align:middle">hoje</span>':''}</button>
         <button class="iconbtn" data-a="day-next" aria-label="Dia seguinte">›</button>
         <input type="date" class="input" id="datePick" value="${S.date}" aria-label="Escolher data">
         ${isToday?'':'<button class="btn ghost" data-a="day-today">Hoje</button>'}
@@ -682,6 +752,8 @@ function renderArquivo(){
     </section>
   </div>`;
   renderEntries();
+  const hw=document.querySelector('.heat-wrap');
+  if(hw&&S.heatYear===new Date().getFullYear()){const st=new Date(S.heatYear,0,1);const wk=Math.floor((Math.round((new Date()-st)/864e5)+((st.getDay()+6)%7))/7);hw.scrollLeft=Math.max(0,30+wk*16-hw.clientWidth+60)}
 }
 function allTagIds(){const s=new Set();dayList().forEach(d=>(d.tags||[]).forEach(t=>s.add(t)));return [...s].sort((a,b)=>kwLabel(a).localeCompare(kwLabel(b)))}
 function renderEntries(){
@@ -1011,6 +1083,7 @@ document.addEventListener('click',async e=>{
     case 'day-prev':setDate(addDays(S.date,-1));break;
     case 'day-next':setDate(addDays(S.date,1));break;
     case 'day-today':setDate(todayISO());break;
+    case 'pick-date':{const dp=$('#datePick');try{dp.showPicker()}catch(err){dp.focus();dp.click()}break}
     case 'write-day':setDate(t.dataset.d);window.scrollTo(0,0);break;
     case 'open-day':flush();openDay(t.dataset.d);break;
     case 'open-person':flush();openPerson(t.dataset.id);break;
@@ -1052,7 +1125,10 @@ document.addEventListener('click',async e=>{
   }
 });
 async function saveSettingsSafe(){try{await store.saveSettings()}catch(e){toast(dbErr(e))}}
-document.getElementById('tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(b)go(b.dataset.view)});
+document.querySelectorAll('#tabs,#bnav,.gear').forEach(n=>n.addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b)go(b.dataset.view)}));
+// esconde a barra de baixo enquanto o teclado está aberto
+document.addEventListener('focusin',e=>{if(e.target.matches('input:not([type=date]),textarea'))document.body.classList.add('typing')});
+document.addEventListener('focusout',()=>setTimeout(()=>{const a=document.activeElement;if(!a||!a.matches||!a.matches('input:not([type=date]),textarea'))document.body.classList.remove('typing')},120));
 
 document.addEventListener('input',e=>{
   const t=e.target;
@@ -1111,10 +1187,10 @@ function markExported(){try{localStorage.setItem(LE_KEY,new Date().toISOString()
 function backupDue(){let sn=null;try{sn=localStorage.getItem(SN_KEY)}catch(e){}if(sn&&sn>=todayISO())return false;const le=lastExport();return !le||diffDays(le.slice(0,10),todayISO())>=7}
 async function doExport(){
   const data=JSON.stringify({app:'livro-dos-dias',version:1,exportedAt:new Date().toISOString(),days:dayList(),people:[...S.people.values()],settings:S.settings},null,2);
-  const name=`livro-dos-dias-${todayISO()}.json`;
+  const name=`diario-${todayISO()}.json`;
   const blob=new Blob([data],{type:'application/json'});
   try{const file=new File([blob],name,{type:'application/json'});
-    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Cópia do Livro dos Dias'});markExported();toast('Cópia exportada');return}}
+    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Cópia do Diário'});markExported();toast('Cópia exportada');return}}
   catch(e){if(e&&e.name==='AbortError')return}
   try{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);markExported();toast('Cópia transferida');return}catch(e){}
   if(!$('#exportOut')){go('ajustes')}
