@@ -986,10 +986,9 @@ function renderFilmes(){
     ${fold({id:'f-month',title:sec('Filmes por mês'),body:`<div class="vbars">${ms.map((m,j)=>`<div class="vcol" title="${MESES[+m.slice(5)-1]} ${m.slice(0,4)}: ${mc[j]}"><span class="vn">${mc[j]||''}</span><i style="height:${mc[j]/mmax*105}px;background:var(--cobalt)"></i><span class="vl">${j%every?'':MES3[+m.slice(5)-1]}</span></div>`).join('')}</div>`})}
   </div>
   <section class="panel limited"><h2 class="sec">Os teus favoritos</h2>${top.length?`<div class="entries">${top.map(filmRow).join('')}</div>`:'<p class="small muted">Ainda sem notas.</p>'}${low.length?`<div class="more-block"><div class="eyebrow" style="margin-top:6px">Os que menos gostaste</div><div class="entries">${low.map(filmRow).join('')}</div></div>`:''}${top.length>3||low.length?'<button class="btn ghost more-btn" data-a="showall">Ver mais</button>':''}</section>
-  <section class="panel"><div class="row" style="justify-content:space-between"><h2 class="sec">Todos os filmes</h2><span class="small muted" id="filmCount"></span></div>
-    <div class="row"><input class="input" id="fq" placeholder="Procurar título ou comentário…" value="${esc(S.film.q)}" style="flex:2;min-width:180px">
+  ${fold({id:'f-all',title:sec('Todos os filmes'),sumId:'filmCount',body:`    <div class="row"><input class="input" id="fq" placeholder="Procurar título ou comentário…" value="${esc(S.film.q)}" style="flex:2;min-width:180px">
     <select class="input" id="fs" style="flex:1;min-width:140px">${[['date','Mais recentes'],['rating','Melhor nota'],['low','Pior nota'],['title','Título (A–Z)']].map(([v,l])=>`<option value="${v}" ${S.film.sort===v?'selected':''}>${l}</option>`).join('')}</select></div>
-    <div class="entries" id="filmList"></div></section></div>`;
+    <div class="entries" id="filmList"></div>`})}</div>`;
   $('#main').innerHTML=h;renderFilmList();
 }
 function renderFilmList(){
