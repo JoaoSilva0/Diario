@@ -221,6 +221,20 @@ textarea.input{width:100%;min-height:120px;font-family:var(--f-mono);font-size:.
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:10px;font-size:.88rem;z-index:80;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(8px);opacity:.6}to{transform:none;opacity:1}}}
 html{-webkit-text-size-adjust:100%}
+.side{display:flex;flex-direction:column;gap:18px;min-width:0}
+details.fold{gap:0}
+details.fold>summary{list-style:none;display:flex;align-items:center;gap:10px;cursor:pointer;min-height:30px}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary .sec,details.fold>summary .eyebrow{flex:none}
+.fsum{flex:1;min-width:0;text-align:right;font-size:.85rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chev{width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 4px;transition:transform .15s;flex:none}
+details.fold[open]>summary .chev{transform:rotate(-135deg);margin-bottom:-2px}
+.fbody{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.hint{margin:0;font-size:.82rem;color:var(--muted)}
+.tile .sub{font-size:.75rem;color:var(--muted)}
+.only-m,.fbtn,.swipe-hint{display:none}
+.more-btn{display:none}
+.qrow{display:contents}
 .gear{display:none}
 .bnav{display:none}
 /* ---------- telemóvel ---------- */
@@ -238,6 +252,29 @@ html{-webkit-text-size-adjust:100%}
   .bnav button[aria-current="page"]{color:var(--cobalt)}
   .bnav button[aria-current="page"] svg{background:var(--cobalt-soft);border-radius:999px;padding:3px 14px;box-sizing:content-box}
   body.typing .bnav{display:none}
+  .side{gap:10px}
+  details.fold{padding:12px 14px}
+  details.fold:not([open])>summary .eyebrow{color:var(--ink)}
+  .fbody{margin-top:10px}
+  .tile .sub{display:none}
+  .tile .only-m{display:block}
+  .tile-x{display:none}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tile span{font-size:.82rem}
+  .swipe-hint{display:inline}
+  .facts{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;margin-inline:-16px;padding-inline:16px;scrollbar-width:none}
+  .facts::-webkit-scrollbar{display:none}
+  .fact{flex:0 0 82%;scroll-snap-align:start}
+  .limited:not(.all) .bars>:nth-child(n+6),.limited:not(.all) .entries>:nth-child(n+4),.limited:not(.all) .more-block{display:none}
+  .limited:not(.all) .more-btn{display:inline-flex;align-self:flex-start}
+  .qrow{display:flex;gap:8px;grid-column:1/-1}
+  .qrow .q{flex:1;min-width:0}
+  .fbtn{display:inline-flex}
+  .filters:not(.open)>select{display:none}
+  .filters>select{grid-column:auto}
+  .kv{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .kv div{padding:8px}
+  .kv b{font-size:1.05rem}
   body.typing .wrap{padding-block:0 24px}
   .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 
@@ -268,7 +305,6 @@ html{-webkit-text-size-adjust:100%}
   .tiles{gap:8px}
   .tile{padding:12px}
   .tile b{font-size:1.6rem}
-  .tiles .tile:last-child:nth-child(odd){grid-column:1/-1}
   .facts{grid-template-columns:1fr;gap:8px}
   .bar{grid-template-columns:minmax(70px,96px) minmax(0,1fr) 36px;padding:6px 0}
   .entry{grid-template-columns:50px minmax(0,1fr) auto;gap:10px;padding:12px 2px}
@@ -388,7 +424,7 @@ const S={
   mode:'loading', days:new Map(), people:new Map(), settings:defaults(),
   view:'hoje', date:todayISO(), draft:null, dirty:false, rev:0, saving:false, saveErr:'',
   period:'365', heatYear:new Date().getFullYear(), heatBy:'nota', heatKey:'', chartKey:'overall',
-  arch:{q:'',person:'',tag:'',min:0}, film:{q:'',sort:'date'}, real:null, note:'', readOnly:false, placeholder:PROMPTS[0]
+  arch:{q:'',person:'',tag:'',min:0}, film:{q:'',sort:'date',limit:20}, folds:{}, real:null, note:'', readOnly:false, placeholder:PROMPTS[0]
 };
 function defaults(){return{factors:FACTORS_DEFAULT.map(x=>({...x})),keywords:KW_DEFAULT.map(k=>({...k,patterns:[...k.patterns]}))}}
 let KW=[];
@@ -594,6 +630,16 @@ function stats(range){
     worst:[...rated].sort((a,b)=>a.overall-b.overall)[0]};
 }
 
+/* ---------- folds (secções que abrem e fecham) ---------- */
+const isMobile=()=>window.matchMedia('(max-width:760px)').matches;
+function fold({id,title,body,sum='',sumId='',openM=false,cls=''}){
+  const open=S.folds[id]??(isMobile()?openM:true);
+  return `<details class="panel fold ${cls}" data-fold="${id}" ${open?'open':''}><summary>${title}<span class="fsum" ${sumId?`id="${sumId}"`:''}>${sum}</span><span class="chev" aria-hidden="true"></span></summary><div class="fbody">${body}</div></details>`;
+}
+document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.fold)S.folds[d.dataset.fold]=d.open},true);
+const eb=t=>`<span class="eyebrow">${t}</span>`, sec=t=>`<h2 class="sec">${t}</h2>`;
+const moreBtn=(n,shown)=>n>shown?`<button class="btn ghost more-btn" data-a="showall">Ver todos (${n})</button>`:'';
+
 /* ---------- render: shell ---------- */
 function render(){
   document.querySelectorAll('#tabs [data-view],#bnav [data-view],.gear').forEach(t=>{t.setAttribute('aria-selected',String(t.dataset.view===S.view));if(t.closest('#bnav'))t.setAttribute('aria-current',t.dataset.view===S.view?'page':'false')});
@@ -630,11 +676,8 @@ function renderHoje(){
         <label>NOTA DO DIA (1–10)</label>
         <div class="score" id="score">${scoreButtons(d.overall)}</div>
       </div>
-      <div class="paper"><textarea id="text" aria-label="O que aconteceu" placeholder="${esc(S.placeholder)} Escreve à vontade — atividades como cinema ou jantar fora e os nomes das pessoas são detetados sozinhos. Usa #etiquetas para marcar o que quiseres.">${esc(d.text)}</textarea></div>
-      <div class="meta-fields">
-        <div class="field"><label for="hl">MOMENTO DO DIA</label><input class="input" id="hl" maxlength="200" placeholder="Uma frase que resuma o dia" value="${esc(d.highlight)}"></div>
-        <div class="field"><label for="place">ONDE</label><input class="input" id="place" maxlength="80" placeholder="Lisboa, casa, Algarve…" value="${esc(d.place)}"></div>
-      </div>
+      <div class="paper"><textarea id="text" aria-label="O que aconteceu" placeholder="${esc(S.placeholder)}">${esc(d.text)}</textarea></div>
+      <p class="hint" id="hint" ${d.text.trim()?'hidden':''}>Escreve à vontade. Pessoas, atividades e filmes entre aspas com nota (ex.: "Amélie", 4/5) são apanhados sozinhos.</p>
       <div class="row" style="justify-content:space-between">
         <span class="status" id="saveStatus" aria-live="polite"></span>
         <div class="row">
@@ -642,29 +685,16 @@ function renderHoje(){
         </div>
       </div>
     </section>
-    <aside style="display:flex;flex-direction:column;gap:18px;min-width:0">
-      <section class="panel">
-        <div class="eyebrow">Com quem estiveste</div>
-        <div class="chips" id="pchips"></div>
-        <div class="addp">
-          <input class="input" id="padd" placeholder="Adicionar pessoa…" autocomplete="off" style="width:100%">
-          <div class="ac" id="pac" hidden></div>
-        </div>
-        <div id="psugg"></div>
-      </section>
-      <section class="panel">
-        <div class="eyebrow">Como foi, por fatores</div>
-        <div id="factors" style="display:flex;flex-direction:column;gap:8px"></div>
-      </section>
-      <section class="panel">
-        <div class="eyebrow">Filmes do dia</div>
-        <div id="films" style="display:flex;flex-direction:column;gap:8px"></div>
-      </section>
-      <section class="panel">
-        <div class="eyebrow">Palavras-chave do dia</div>
-        <div id="tags"></div>
-      </section>
-      <section class="panel" id="onthisday"></section>
+    <aside class="side">
+      ${fold({id:'w-people',title:eb('Com quem estiveste'),sumId:'sum-people',openM:true,body:`<div class="chips" id="pchips"></div>
+        <div class="addp"><input class="input" id="padd" placeholder="Adicionar pessoa…" autocomplete="off" style="width:100%"><div class="ac" id="pac" hidden></div></div>
+        <div id="psugg"></div>`})}
+      ${fold({id:'w-factors',title:eb('Fatores'),sumId:'sum-factors',body:'<div id="factors" style="display:flex;flex-direction:column;gap:8px"></div>'})}
+      ${fold({id:'w-films',title:eb('Filmes'),sumId:'sum-films',body:'<div id="films" style="display:flex;flex-direction:column;gap:8px"></div>'})}
+      ${fold({id:'w-tags',title:eb('Atividades'),sumId:'sum-tags',body:'<div id="tags"></div>'})}
+      ${fold({id:'w-extra',title:eb('Momento e local'),sumId:'sum-extra',body:`<div class="field"><label for="hl">MOMENTO DO DIA</label><input class="input" id="hl" maxlength="200" placeholder="Uma frase que resuma o dia" value="${esc(d.highlight)}"></div>
+        <div class="field"><label for="place">ONDE</label><input class="input" id="place" maxlength="80" placeholder="Lisboa, casa, Algarve…" value="${esc(d.place)}"></div>`})}
+      ${fold({id:'w-memory',title:eb('Neste dia'),sumId:'sum-memory',body:'<div id="onthisday" style="display:flex;flex-direction:column;gap:10px"></div>'})}
     </aside>
   </div>`;
   renderSide();renderOnThisDay();refreshStatus();
@@ -680,7 +710,7 @@ function renderSide(){
   const mentions=[...new Set((d.text.match(/@([\p{L}][\p{L}\-]+(?:\s[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}\-]+)?)/gu)||[]).map(m=>m.slice(1).trim()))].filter(n=>![...S.people.values()].some(p=>norm(p.name)===norm(n)));
   $('#psugg').innerHTML=sug.length||mentions.length?`<div class="small muted" style="margin-bottom:6px">Encontrei no texto:</div><div class="chips">${sug.map(p=>`<button class="chip sugg" data-a="p-add" data-id="${p.id}">+ ${esc(p.name)}</button>`).join('')}${mentions.map(n=>`<button class="chip sugg" data-a="p-create" data-name="${esc(n)}">+ criar ${esc(n)}</button>`).join('')}</div>`:'';
   $('#factors').innerHTML=S.settings.factors.map(f=>{const v=(d.ratings||{})[f.id];let dots='';for(let i=1;i<=5;i++)dots+=`<button data-a="rate" data-f="${f.id}" data-v="${i}" class="${v>=i?'on':''}" aria-label="${esc(f.label)} ${i} de 5">${i}</button>`;return `<div class="factor"><span>${esc(f.label)}</span><div class="dots">${dots}</div></div>`}).join('');
-  renderFilms();
+  renderFilms();renderSums();
   const auto=[...detectKw(d.text),...hashtags(d.text)];const ex=new Set(d.excluded||[]);const man=(d.manualTags||[]).filter(x=>!auto.includes(x));
   const avail=S.settings.keywords.filter(k=>!auto.includes(k.id)&&!man.includes(k.id));
   $('#tags').innerHTML=`<div class="chips">${auto.map(id=>`<span class="chip ${id.startsWith('#')?'tag':'kw'} ${ex.has(id)?'off':''}">${esc(kwLabel(id))}<button data-a="tag-toggle" data-id="${esc(id)}" aria-label="${ex.has(id)?'Repor':'Ignorar'}">${ex.has(id)?'↺':'×'}</button></span>`).join('')}${man.map(id=>`<span class="chip kw">${esc(kwLabel(id))}<button data-a="tag-unman" data-id="${esc(id)}" aria-label="Remover">×</button></span>`).join('')}${!auto.length&&!man.length?'<span class="muted small">Aparecem à medida que escreves.</span>':''}</div>
@@ -698,15 +728,25 @@ function renderFilms(){
     ${f.auto&&!f.edited?`<span class="small muted">Detetado no texto${f.raw?' · nota escrita '+esc(f.raw):''}</span>`:''}
   </div>`).join(''):'<p class="small muted" style="margin:0">Escreve o título entre aspas, por exemplo: vi o filme "Amélie", dou 4/5. O filme e a nota aparecem aqui.</p>')+'<div><button class="btn" data-a="film-add">+ Adicionar filme à mão</button></div>';
 }
+function renderSums(){
+  const d=S.draft;const set=(id,t)=>{const el=document.getElementById(id);if(el)el.textContent=t};
+  const ps=(d.people||[]).map(personName).filter(Boolean);
+  set('sum-people',ps.length?ps.join(', '):'');
+  const nf=S.settings.factors.filter(f=>(d.ratings||{})[f.id]!=null).length;set('sum-factors',nf?`${nf} de ${S.settings.factors.length}`:'');
+  const fs=(d.films||[]).filter(f=>f.title.trim());set('sum-films',fs.length?fs.map(f=>f.title+(f.rating!=null?' · '+fmtR(f.rating)+'★':'')).join(', '):'');
+  const nt=computeTags(d).length;set('sum-tags',nt?plural(nt,'atividade','atividades'):'');
+  set('sum-extra',[d.highlight,d.place].filter(x=>x&&x.trim()).join(' · '));
+}
 function renderOnThisDay(){
   const el=$('#onthisday');if(!el)return;
   const md=S.date.slice(5);const y=+S.date.slice(0,4);
   const past=dayList().filter(d=>d.date.slice(5)===md&&+d.date.slice(0,4)<y).reverse();
   const month=S.days.get(addDays(S.date,-30));
-  let h='<div class="eyebrow">Neste dia</div>';
+  let h='';
   if(past.length)h+=past.slice(0,3).map(d=>memoryCard(d,`Há ${y-+d.date.slice(0,4)} ${y-+d.date.slice(0,4)===1?'ano':'anos'}`)).join('');
   else if(month)h+=memoryCard(month,'Há 30 dias');
   else h+='<p class="small muted" style="margin:0">Ainda não há nada escrito neste dia em anos anteriores. Daqui a um ano, este espaço mostra o que escreveres hoje.</p>';
+  {const el2=document.getElementById('sum-memory');if(el2)el2.textContent=past.length?`há ${y-+past[0].date.slice(0,4)} ${y-+past[0].date.slice(0,4)===1?'ano':'anos'}`:month?'há 30 dias':''}
   if(S.days.size>=3)h+='<button class="btn" data-a="random">Lembrança aleatória</button>';
   el.innerHTML=h;
 }
@@ -742,8 +782,8 @@ function renderArquivo(){
     </section>
     <section class="panel">
       <div class="row" style="justify-content:space-between"><h2 class="sec">Todas as páginas</h2><span class="small muted" id="archCount"></span></div>
-      <div class="filters">
-        <input class="input q" id="aq" placeholder="Procurar no que escreveste…" value="${esc(a.q)}">
+      <div class="filters ${a.person||a.tag||+a.min?'open':''}">
+        <div class="qrow"><input class="input q" id="aq" placeholder="Procurar no que escreveste…" value="${esc(a.q)}"><button class="btn fbtn" data-a="filters" aria-expanded="${!!(a.person||a.tag||+a.min)}">Filtros${[a.person,a.tag,+a.min].filter(Boolean).length?' · '+[a.person,a.tag,+a.min].filter(Boolean).length:''}</button></div>
         <select class="input" id="ap"><option value="">Todas as pessoas</option>${[...S.people.values()].sort((x,y)=>x.name.localeCompare(y.name)).map(p=>`<option value="${p.id}" ${a.person===p.id?'selected':''}>${esc(p.name)}</option>`).join('')}</select>
         <select class="input" id="at"><option value="">Todas as atividades</option>${allTagIds().map(t=>`<option value="${esc(t)}" ${a.tag===t?'selected':''}>${esc(kwLabel(t))}</option>`).join('')}</select>
         <select class="input" id="am"><option value="0">Qualquer nota</option>${[5,6,7,8,9].map(n=>`<option value="${n}" ${a.min==n?'selected':''}>Nota ${n} ou mais</option>`).join('')}</select>
@@ -800,26 +840,26 @@ function renderRetro(){
   <div class="seg" role="group" aria-label="Período">${opts.map(([v,l])=>`<button data-a="period" data-v="${v}" class="${v===S.period?'on':''}">${esc(l)}</button>`).join('')}</div></div>`;
   if(!st.days.length){$('#main').innerHTML=h+`<div class="panel empty"><h3>Nada escrito neste período</h3><p>Escolhe um período mais longo.</p></div></div>`;return}
   h+=`<div class="tiles">
-    <div class="tile"><b>${st.days.length}</b><span>dias escritos · ${Math.round(st.days.length/st.span*100)}% do período</span></div>
-    <div class="tile"><b>${f1(st.base)}</b><span>nota média${st.rated.length?' em '+plural(st.rated.length,'dia','dias'):''}</span></div>
-    <div class="tile"><b>${st.people.length}</b><span>pessoas diferentes</span></div>
-    <div class="tile"><b>${st.longest}</b><span>maior sequência · atual ${cs}</span></div>
-    <div class="tile"><b>${st.wordsTotal.toLocaleString('pt-PT')}</b><span>palavras · ≈ ${Math.max(1,Math.round(st.wordsTotal/250))} pág. de livro</span></div>
+    <div class="tile"><b>${st.days.length}</b><span>dias escritos</span><span class="sub">${Math.round(st.days.length/st.span*100)}% do período</span></div>
+    <div class="tile"><b>${f1(st.base)}</b><span>nota média</span><span class="sub">${st.rated.length?'em '+plural(st.rated.length,'dia','dias'):''}</span></div>
+    <div class="tile"><b>${st.people.length}</b><span>pessoas</span></div>
+    <div class="tile"><b>${st.longest}</b><span>dias seguidos (máx.)</span><span class="sub">agora: ${cs}</span></div>
+    <div class="tile tile-x"><b>${st.wordsTotal.toLocaleString('pt-PT')}</b><span>palavras</span><span class="sub">≈ ${Math.max(1,Math.round(st.wordsTotal/250))} pág. de livro</span></div>
   </div>`;
   const facts=funFacts(st);
-  if(facts.length)h+=`<section><div class="eyebrow" style="margin-bottom:10px">Curiosidades do período</div><div class="facts">${facts.join('')}</div></section>`;
+  if(facts.length)h+=`<section><div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="eyebrow">Curiosidades</span><span class="small muted swipe-hint">desliza →</span></div><div class="facts">${facts.join('')}</div></section>`;
   h+=`<div class="grid2">
-    <section class="panel"><h2 class="sec">Com quem mais estiveste</h2>${barsPeople(st)}</section>
-    <section class="panel"><h2 class="sec">O que mais fizeste</h2>${barsTags(st)}</section>
+    <section class="panel limited"><h2 class="sec">Com quem mais estiveste</h2>${barsPeople(st)}${moreBtn(Math.min(10,st.people.length),5)}</section>
+    <section class="panel limited"><h2 class="sec">O que mais fizeste</h2>${barsTags(st)}${moreBtn(Math.min(10,st.tags.length),5)}</section>
   </div>
-  <section class="panel chart"><div class="row" style="justify-content:space-between"><h2 class="sec">Como os dias foram correndo</h2>
+  <section class="panel chart"><div class="row" style="justify-content:space-between"><h2 class="sec">Como correram os dias</h2>
     <div class="seg">${[['overall','Nota do dia'],...S.settings.factors.map(f=>[f.id,f.label])].map(([k,l])=>`<button data-a="chart" data-v="${esc(k)}" class="${S.chartKey===k?'on':''}">${esc(l)}</button>`).join('')}</div></div>
     ${lineChart(st.days,range)}</section>
   <div class="grid2">
-    <section class="panel"><h2 class="sec">Dias da semana</h2>${weekdayBars(st)}</section>
-    <section class="panel"><h2 class="sec">O que te faz bem</h2><p class="small muted" style="margin:0">Diferença entre a nota média dos dias com cada pessoa ou atividade e a tua média geral (${f1(st.base)}). Só conta o que aparece em 3 ou mais dias com nota.</p>${effects(st)}</section>
+    ${fold({id:'r-week',title:sec('Dias da semana'),body:weekdayBars(st)})}
+    ${fold({id:'r-good',title:sec('O que te faz bem'),body:`<p class="small muted" style="margin:0">Diferença entre a nota média dos dias com cada pessoa ou atividade e a tua média geral (${f1(st.base)}). Só conta o que aparece em 3 ou mais dias com nota.</p>${effects(st)}`})}
   </div>
-  ${st.words.length?`<section class="panel"><h2 class="sec">Palavras que mais usaste</h2><div class="chips">${st.words.slice(0,30).map(([w,n],i)=>`<span class="chip" style="font-size:${(0.95+Math.max(0,1-i/30)*0.45).toFixed(2)}rem">${esc(w)} <span class="muted num">${n}</span></span>`).join('')}</div></section>`:''}
+  ${st.words.length?fold({id:'r-words',title:sec('Palavras que mais usaste'),body:`<div class="chips">${st.words.slice(0,30).map(([w,n],i)=>`<span class="chip" style="font-size:${(0.95+Math.max(0,1-i/30)*0.45).toFixed(2)}rem">${esc(w)} <span class="muted num">${n}</span></span>`).join('')}</div>`}):''}
   </div>`;
   $('#main').innerHTML=h;
 }
@@ -927,11 +967,11 @@ function renderFilmes(){
   const cntAll=new Map();ALL.forEach(f=>{const k=filmKey(f.title);cntAll.set(k,(cntAll.get(k)||0)+1)});
   const rew=new Set(F.filter(f=>cntAll.get(filmKey(f.title))>1).map(f=>filmKey(f.title))).size;
   h+=`<div class="tiles">
-    <div class="tile"><b>${F.length}</b><span>${F.length===1?'filme visto':'filmes vistos'}</span></div>
-    <div class="tile"><b>${av!=null?f1(av):'–'}</b><span>nota média /5 ${av!=null?stars(Math.round(av*2)/2):''}</span></div>
-    <div class="tile"><b>${casa}</b><span>em casa</span></div>
-    <div class="tile"><b>${cin}</b><span>no cinema</span></div>
-    <div class="tile"><b>${rew}</b><span>${rew===1?'filme revisto':'filmes revistos'}</span></div>
+    <div class="tile"><b>${F.length}</b><span>${F.length===1?'filme visto':'filmes vistos'}</span><span class="sub only-m">${casa} em casa · ${cin} no cinema</span></div>
+    <div class="tile"><b>${av!=null?f1(av):'–'}</b><span>nota média /5</span><span class="sub" style="display:block">${av!=null?stars(Math.round(av*2)/2):''}</span></div>
+    <div class="tile tile-x"><b>${casa}</b><span>em casa</span></div>
+    <div class="tile tile-x"><b>${cin}</b><span>no cinema</span></div>
+    <div class="tile tile-x"><b>${rew}</b><span>${rew===1?'filme revisto':'filmes revistos'}</span></div>
   </div>`;
   // distribution
   const steps=Array.from({length:10},(_,j)=>(j+1)/2);const dist=steps.map(v=>rated.filter(f=>f.rating===v).length);const dmax=Math.max(1,...dist);
@@ -942,10 +982,10 @@ function renderFilmes(){
   const low=rated.length>=6?[...rated].sort((a,b)=>a.rating-b.rating).slice(0,3):[];
   const filmRow=f=>`<button class="entry" data-a="open-day" data-d="${f.date}"><div class="d">${esc(fmtShort(f.date))}</div><div style="min-width:0"><div style="font-weight:700">${esc(f.title)}</div>${f.comment?`<div class="who">${esc(f.comment)}</div>`:''}</div><div class="rt">${f.rating!=null?stars(f.rating)+`<span class="num small muted">${fmtR(f.rating)}/5</span>`:'<span class="small muted">sem nota</span>'}</div></button>`;
   h+=`<div class="grid2">
-    <section class="panel"><h2 class="sec">Como costumas avaliar</h2>${rated.length?`<div class="vbars">${steps.map((v,j)=>`<div class="vcol" title="${fmtR(v)}/5: ${dist[j]}"><span class="vn">${dist[j]||''}</span><i style="height:${dist[j]/dmax*105}px"></i><span class="vl">${fmtR(v)}</span></div>`).join('')}</div><p class="small muted" style="margin:0">Número de filmes por nota, de 0,5 a 5.</p>`:'<p class="small muted">Ainda sem notas.</p>'}</section>
-    <section class="panel"><h2 class="sec">Filmes por mês</h2><div class="vbars">${ms.map((m,j)=>`<div class="vcol" title="${MESES[+m.slice(5)-1]} ${m.slice(0,4)}: ${mc[j]}"><span class="vn">${mc[j]||''}</span><i style="height:${mc[j]/mmax*105}px;background:var(--cobalt)"></i><span class="vl">${j%every?'':MES3[+m.slice(5)-1]}</span></div>`).join('')}</div></section>
+    ${fold({id:'f-dist',title:sec('Como costumas avaliar'),body:`${rated.length?`<div class="vbars">${steps.map((v,j)=>`<div class="vcol" title="${fmtR(v)}/5: ${dist[j]}"><span class="vn">${dist[j]||''}</span><i style="height:${dist[j]/dmax*105}px"></i><span class="vl">${fmtR(v)}</span></div>`).join('')}</div><p class="small muted" style="margin:0">Número de filmes por nota, de 0,5 a 5.</p>`:'<p class="small muted">Ainda sem notas.</p>'}`})}
+    ${fold({id:'f-month',title:sec('Filmes por mês'),body:`<div class="vbars">${ms.map((m,j)=>`<div class="vcol" title="${MESES[+m.slice(5)-1]} ${m.slice(0,4)}: ${mc[j]}"><span class="vn">${mc[j]||''}</span><i style="height:${mc[j]/mmax*105}px;background:var(--cobalt)"></i><span class="vl">${j%every?'':MES3[+m.slice(5)-1]}</span></div>`).join('')}</div>`})}
   </div>
-  <section class="panel"><h2 class="sec">Os teus favoritos</h2>${top.length?`<div class="entries">${top.map(filmRow).join('')}</div>`:'<p class="small muted">Ainda sem notas.</p>'}${low.length?`<div class="eyebrow" style="margin-top:6px">Os que menos gostaste</div><div class="entries">${low.map(filmRow).join('')}</div>`:''}</section>
+  <section class="panel limited"><h2 class="sec">Os teus favoritos</h2>${top.length?`<div class="entries">${top.map(filmRow).join('')}</div>`:'<p class="small muted">Ainda sem notas.</p>'}${low.length?`<div class="more-block"><div class="eyebrow" style="margin-top:6px">Os que menos gostaste</div><div class="entries">${low.map(filmRow).join('')}</div></div>`:''}${top.length>3||low.length?'<button class="btn ghost more-btn" data-a="showall">Ver mais</button>':''}</section>
   <section class="panel"><div class="row" style="justify-content:space-between"><h2 class="sec">Todos os filmes</h2><span class="small muted" id="filmCount"></span></div>
     <div class="row"><input class="input" id="fq" placeholder="Procurar título ou comentário…" value="${esc(S.film.q)}" style="flex:2;min-width:180px">
     <select class="input" id="fs" style="flex:1;min-width:140px">${[['date','Mais recentes'],['rating','Melhor nota'],['low','Pior nota'],['title','Título (A–Z)']].map(([v,l])=>`<option value="${v}" ${S.film.sort===v?'selected':''}>${l}</option>`).join('')}</select></div>
@@ -957,9 +997,10 @@ function renderFilmList(){
   const cntAll=new Map();allFilms(null).forEach(f=>{const k=filmKey(f.title);cntAll.set(k,(cntAll.get(k)||0)+1)});
   let F=allFilms(periodRange()).filter(f=>!q||norm(f.title+' '+(f.comment||'')).includes(q));
   const srt={date:(a,b)=>a.date<b.date?1:-1,rating:(a,b)=>(b.rating??-1)-(a.rating??-1)||(a.date<b.date?1:-1),low:(a,b)=>(a.rating??99)-(b.rating??99),title:(a,b)=>a.title.localeCompare(b.title,'pt')}[S.film.sort];
-  F.sort(srt);$('#filmCount').textContent=plural(F.length,'filme','filmes');
+  F.sort(srt);$('#filmCount').textContent=plural(F.length,'filme','filmes');const total=F.length;F=F.slice(0,S.film.limit);
   el.innerHTML=F.map(f=>{const ps=(f.people||[]).map(personName).filter(Boolean);const n=cntAll.get(filmKey(f.title));
     return `<button class="entry" data-a="open-day" data-d="${f.date}"><div class="d"><b>${parse(f.date).getDate()}</b>${MES3[parse(f.date).getMonth()]} ${f.date.slice(0,4)}</div><div style="min-width:0"><div style="font-weight:700">${esc(f.title)}</div>${f.comment?`<div class="t" style="font-size:.88rem">${esc(f.comment)}</div>`:''}<div class="who">${[f.where?WHERE[f.where]:'',n>1?`visto ${n} vezes`:''].filter(Boolean).map(esc).join(' · ')}</div></div><div class="rt">${f.rating!=null?stars(f.rating)+`<span class="num small muted">${fmtR(f.rating)}/5</span>`:'<span class="small muted">sem nota</span>'}</div></button>`}).join('')||'<p class="muted">Nada corresponde à pesquisa.</p>';
+  if(total>F.length)el.insertAdjacentHTML('beforeend',`<button class="btn ghost" data-a="film-more" style="margin-top:8px">Mostrar mais (${total-F.length})</button>`);
 }
 
 /* ---------- render: ajustes ---------- */
@@ -975,11 +1016,10 @@ function renderAjustes(){
       <div>${s.factors.map((f,i)=>`<div class="set-row"><input class="input" data-fl="${i}" value="${esc(f.label)}" aria-label="Nome do fator"><span class="pat small muted">${dayList().filter(d=>(d.ratings||{})[f.id]!=null).length} dias com nota</span><button class="btn danger" data-a="factor-del" data-i="${i}">Apagar</button></div>`).join('')}</div>
       <div class="row"><input class="input" id="newFactor" placeholder="Novo fator (ex.: Sono)" style="flex:1;min-width:160px"><button class="btn" data-a="factor-add">Adicionar fator</button></div>
     </section>
-    <section class="panel"><h2 class="sec">Atividades detetadas no texto</h2><p class="small muted" style="margin:0">Quando escreves uma destas expressões, a atividade é registada nesse dia. Separa as expressões por vírgulas. Acentos e maiúsculas não contam. Também podes escrever #qualquercoisa no texto.</p>
+    ${fold({id:'a-kw',title:sec('Atividades detetadas no texto'),sum:plural(s.keywords.length,'atividade','atividades'),body:`<p class="small muted" style="margin:0">Quando escreves uma destas expressões, a atividade é registada nesse dia. Separa as expressões por vírgulas. Acentos e maiúsculas não contam. Também podes escrever #qualquercoisa no texto.</p>
       <div>${s.keywords.map((k,i)=>`<div class="set-row"><input class="input" data-kl="${i}" value="${esc(k.label)}" aria-label="Nome da atividade"><input class="input pat" data-kp="${i}" value="${esc(k.patterns.join(', '))}" aria-label="Expressões"><button class="btn danger" data-a="kw-del" data-i="${i}">Apagar</button></div>`).join('')}</div>
       <div class="row"><input class="input" id="newKwL" placeholder="Atividade (ex.: Surf)" style="flex:1;min-width:140px"><input class="input" id="newKwP" placeholder="Expressões (ex.: surf, surfar, ondas)" style="flex:2;min-width:180px"><button class="btn" data-a="kw-add">Adicionar</button></div>
-      <div class="row"><button class="btn" data-a="retag">Voltar a analisar todos os dias</button><span class="small muted" id="retagOut">Atualiza atividades e filmes nos dias antigos (útil depois de mudares as expressões).</span></div>
-    </section>
+      <div class="row"><button class="btn" data-a="retag">Voltar a analisar todos os dias</button><span class="small muted" id="retagOut">Atualiza atividades e filmes nos dias antigos (útil depois de mudares as expressões).</span></div>`})}
   </div>`;
 }
 
@@ -1117,6 +1157,9 @@ document.addEventListener('click',async e=>{
       try{for(const d of dayList()){const d2={...blankDay(d.date),...clean(d)};syncFilms(d2);d2.films=d2.films.filter(f=>f.title&&f.title.trim());const nt=computeTags(d2);if(JSON.stringify(nt)!==JSON.stringify(d.tags||[])||JSON.stringify(d2.films)!==JSON.stringify(d.films)){d2.tags=nt;await store.saveDay(d2);n++}}out.textContent=n?`${plural(n,'dia atualizado','dias atualizados')}.`:'Tudo já estava em dia.'}catch(err){out.textContent=dbErr(err)}
       t.disabled=false;break}
     case 'export':await doExport();break;
+    case 'film-more':S.film.limit+=20;renderFilmList();break;
+    case 'showall':{const box=t.closest('.limited');if(box){box.classList.add('all');t.remove()}break}
+    case 'filters':{const f=$('.filters');if(f){f.classList.toggle('open');t.setAttribute('aria-expanded',f.classList.contains('open'))}break}
     case 'snooze':try{localStorage.setItem(SN_KEY,addDays(todayISO(),2))}catch(e){}renderBanner();break;
     case 'import':$('#importFile').click();break;
     case 'copy-export':{const ta=$('#exportText');try{await navigator.clipboard.writeText(ta.value);markExported();toast('Copiado')}catch(err){ta.focus();ta.select();toast('Seleciona e copia com Ctrl/Cmd+C')}break}
@@ -1132,15 +1175,15 @@ document.addEventListener('focusout',()=>setTimeout(()=>{const a=document.active
 
 document.addEventListener('input',e=>{
   const t=e.target;
-  if(t.id==='text'){S.draft.text=t.value;touch();clearTimeout(t._k);t._k=setTimeout(()=>{syncFilms(S.draft);renderSide()},500)}
+  if(t.id==='text'){S.draft.text=t.value;const hn=$('#hint');if(hn)hn.hidden=!!t.value.trim();touch();clearTimeout(t._k);t._k=setTimeout(()=>{syncFilms(S.draft);renderSide()},500)}
   else if(t.dataset.film!=null){const f=(S.draft.films||[])[+t.dataset.film];if(!f)return;const k=t.dataset.k;
     if(k==='title'){if(f.auto&&f.key)S.draft.filmExcluded=[...new Set([...(S.draft.filmExcluded||[]),f.key])];f.title=t.value;f.key=filmKey(t.value)}
     else if(k==='rating'){f.rating=t.value===''?null:+t.value;f.raw='';const st=t.parentElement.querySelector('.stars');if(st)st.style.setProperty('--v',(f.rating||0)*20+'%')}
     else f[k]=t.value;
     f.edited=true;touch()}
-  else if(t.id==='fq'){S.film.q=t.value;renderFilmList()}
-  else if(t.id==='hl'){S.draft.highlight=t.value;touch()}
-  else if(t.id==='place'){S.draft.place=t.value;touch()}
+  else if(t.id==='fq'){S.film.q=t.value;S.film.limit=20;renderFilmList()}
+  else if(t.id==='hl'){S.draft.highlight=t.value;touch();renderSums()}
+  else if(t.id==='place'){S.draft.place=t.value;touch();renderSums()}
   else if(t.id==='padd')renderAc(t.value);
   else if(t.id==='aq'){S.arch.q=t.value;renderEntries()}
 });
